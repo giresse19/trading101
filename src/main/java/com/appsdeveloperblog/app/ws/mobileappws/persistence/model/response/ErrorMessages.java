@@ -5,6 +5,8 @@ public enum ErrorMessages {
     MISSING_REQUIRED_FIELD("Missing required field, Please check documentation for required fields"),
     RECORD_ALREADY_EXISTS("Record already exist"),
     INTERNAL_SERVER_ERROR("Internal server error"),
+    RECORD_NOT_FOUND("Record not found"),
+    FAILED_PRECONDITION("Resource precondition failed"),
     NO_RECORD_FOUND("Record with provided id is not found"),
     AUTHENTICATION_FAILED("Authentication failed due to wrong credentials"),
     JWT_EXPIRED("Authentication failed due to expired jwt token"),

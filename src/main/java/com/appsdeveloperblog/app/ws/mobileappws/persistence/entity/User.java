@@ -1,6 +1,5 @@
 package com.appsdeveloperblog.app.ws.mobileappws.persistence.entity;
 
-import com.appsdeveloperblog.app.ws.mobileappws.Interfaces.INameableDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,6 +8,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -48,5 +48,7 @@ public class User implements Serializable {
     @Column(nullable = false)
     private Boolean emailVerificationStatus = false;
 
+    @OneToMany(mappedBy = "userDetails", cascade = CascadeType.ALL)
+    private List<Address> addresses;
 
 }

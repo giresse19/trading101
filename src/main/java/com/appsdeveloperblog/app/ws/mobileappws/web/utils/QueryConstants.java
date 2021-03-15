@@ -6,7 +6,7 @@ public final class QueryConstants {
     public static final String PAGE = "page";
     public static final String LIMIT = "limit";
     public static final String DEFAULT_START = "0";
-    public static final String DEFAULT_LIMIT = "20";
+    public static final String DEFAULT_LIMIT = "30";
     public static final String SIZE = "size";
     public static final String SORT_BY = "sortBy";
     public static final String SORT_ORDER = "sortOrder";
