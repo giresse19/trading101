@@ -48,7 +48,8 @@ public class AppExceptionsHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {DataIntegrityViolationException.class, MyBadRequestException.class})
     protected final ResponseEntity<Object> handleBadRequest(final RuntimeException ex, final WebRequest request) {
-        return handleExceptionInternal(ex, message(HttpStatus.BAD_REQUEST, ex), new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+        final String bodyOfResponse = ErrorMessages.RECORD_ALREADY_EXISTS.getErrorMessage();
+        return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
     }
 
     private ApiError message(final HttpStatus httpStatus, final Exception ex) {
@@ -57,7 +58,7 @@ public class AppExceptionsHandler extends ResponseEntityExceptionHandler {
         final Throwable devMessage = explicitDevErrorMsg(ex);
         ErrorMessage errorMessage = new ErrorMessage(new Date(), message, devMessage);
 
-        return new ApiError(httpStatus.value(), errorMessage.getMessage(), errorMessage.getDeveloperMessage(), errorMessage.getTimestamp());
+        return new ApiError(errorMessage.getTimestamp(), httpStatus.value(), errorMessage.getMessage(), errorMessage.getDeveloperMessage());
     }
 
     public static Throwable explicitDevErrorMsg(Throwable throwable) {
