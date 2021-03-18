@@ -12,7 +12,6 @@ services:
     restart: always
     volumes:
       - dbdata:/var/lib/mysql
-      - ./cicd/my.cnf:/etc/mysql/my.cnf:rw
     environment:
       MYSQL_ROOT_PASSWORD: test
       MYSQL_DATABASE: photo_app
