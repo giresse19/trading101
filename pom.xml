@@ -10,6 +10,8 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
+    <packaging>jar</packaging>
+
     <groupId>com.appsdeveloperblog.app.ws</groupId>
     <artifactId>mobile-app-ws</artifactId>
     <version>0.0.1-SNAPSHOT</version>
@@ -26,6 +28,8 @@
 
     <properties>
         <java.version>1.8</java.version>
+        <artifactName>mobile-app</artifactName>
+        <artifactVersion>1.0.0</artifactVersion>
     </properties>
 
     <dependencies>
@@ -83,9 +87,15 @@
             <artifactId>modelmapper</artifactId>
             <version>2.3.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-hateoas</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
+        <finalName>${artifactName}-${artifactVersion}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
