@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface AddressesService <T extends AddressDto>{
     List<AddressDto> getAddresses(String id);
-    AddressDto getAddress(String addressId);
+    AddressDto getUserAddress(String addressId);
 }

@@ -1,5 +1,7 @@
 package com.appsdeveloperblog.app.ws.mobileappws.web.utils.security;
 
+import com.appsdeveloperblog.app.ws.mobileappws.dto.UserDto;
+import com.appsdeveloperblog.app.ws.mobileappws.web.utils.UrlMappings;
 import com.appsdeveloperblog.app.ws.mobileappws.web.utils.service.UserService;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -11,10 +13,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @EnableWebSecurity
 public class WebSecurity extends WebSecurityConfigurerAdapter {
-    private final UserService userDetailsService;
+    private final UserService<UserDto> userDetailsService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public WebSecurity(UserService userDetailsService,
+    public WebSecurity(UserService<UserDto> userDetailsService,
                        BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userDetailsService = userDetailsService;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
@@ -27,7 +29,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 .permitAll().anyRequest().authenticated()
                 .and()
                 .addFilter(getAuthenticationFilter())
-                .addFilter(new AuthorizationFilter(authenticationManager()))
+                .addFilter(new AuthorizationFilter(authenticationManager() ))
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
@@ -39,7 +41,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 
     public AuthenticationFilter getAuthenticationFilter() throws Exception {
         final AuthenticationFilter filter = new AuthenticationFilter(authenticationManager());
-        filter.setFilterProcessesUrl("/api/users/login");
+        filter.setFilterProcessesUrl(UrlMappings.LOGIN);
         return filter;
     }
 }

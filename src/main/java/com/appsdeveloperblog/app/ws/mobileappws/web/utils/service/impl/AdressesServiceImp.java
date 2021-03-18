@@ -3,7 +3,6 @@ package com.appsdeveloperblog.app.ws.mobileappws.web.utils.service.impl;
 import com.appsdeveloperblog.app.ws.mobileappws.dto.AddressDto;
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.entity.Address;
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.entity.User;
-import com.appsdeveloperblog.app.ws.mobileappws.persistence.model.response.AddressRest;
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.repository.AddressesRepository;
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.repository.UserRepository;
 import com.appsdeveloperblog.app.ws.mobileappws.web.utils.service.AddressesService;
@@ -15,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class AdressesServiceImp implements AddressesService {
+public class AdressesServiceImp implements AddressesService<AddressDto> {
     private final UserRepository userRepository;
     private final AddressesRepository addressesRepository;
 
@@ -41,7 +40,7 @@ public class AdressesServiceImp implements AddressesService {
     }
 
     @Override
-    public AddressDto getAddress(String addressId) {
+    public AddressDto getUserAddress(String addressId) {
         Address address = addressesRepository.findByAddressId(addressId);
         return new ModelMapper().map(address, AddressDto.class);
     }

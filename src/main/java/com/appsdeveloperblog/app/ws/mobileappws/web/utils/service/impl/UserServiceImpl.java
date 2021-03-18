@@ -1,10 +1,8 @@
 package com.appsdeveloperblog.app.ws.mobileappws.web.utils.service.impl;
 
-import com.appsdeveloperblog.app.ws.mobileappws.Exceptions.MyBadRequestException;
 import com.appsdeveloperblog.app.ws.mobileappws.dto.AddressDto;
 import com.appsdeveloperblog.app.ws.mobileappws.dto.UserDto;
 import com.appsdeveloperblog.app.ws.mobileappws.dto.Utils;
-import com.appsdeveloperblog.app.ws.mobileappws.persistence.entity.Address;
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.entity.User;
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.model.response.ErrorMessages;
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.repository.UserRepository;
@@ -25,7 +23,7 @@ import java.util.List;
 
 
 @Service
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService<UserDto>{
     private final UserRepository userRepository;
     private final Utils utils;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -112,9 +110,6 @@ public class UserServiceImpl implements UserService{
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email);
-
-        if (user == null) throw new UsernameNotFoundException(email);
-
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getEncryptedPassword(),
                 new ArrayList<>());
     }

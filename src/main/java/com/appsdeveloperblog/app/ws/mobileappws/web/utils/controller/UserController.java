@@ -12,6 +12,11 @@ import io.jsonwebtoken.impl.DefaultClaims;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,26 +24,25 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.appsdeveloperblog.app.ws.mobileappws.web.utils.QueryConstants.*;
 
 @RestController
 @RequestMapping(UrlMappings.USERS)
 public class UserController extends AbstractController<UserDto>{
-    private final UserService userService;
-    private final AddressesService addressesService;
-    private final JwtUtils jwtUtils;
+    private final UserService<UserDto> userService;
+    private final AddressesService<AddressDto> addressesService;
+   // private final JwtUtils jwtUtils;
 
     @Autowired
-    public UserController(UserService userService,  AddressesService addressesService, JwtUtils jwtUtils) {
+    public UserController(UserService<UserDto> userService,  AddressesService<AddressDto> addressesService, JwtUtils jwtUtils) {
         this.userService = userService;
-        this.jwtUtils = jwtUtils;
+     //   this.jwtUtils = jwtUtils;
         this.addressesService = addressesService;
     }
+
+    // Get - A user
 
     @GetMapping(path = "/{id}",
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}
@@ -49,21 +53,66 @@ public class UserController extends AbstractController<UserDto>{
         return modelMapper.map(userDto, UserRest.class);
     }
 
+    // Get - All addresses
+
     @GetMapping(path = "/{id}/addresses",
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}
     )
-    public List<AddressRest> getUserAddresses(@PathVariable String id) {
+    public CollectionModel<AddressRest> getUserAddresses(@PathVariable String id) {
 
         List<AddressRest> addressesList = new ArrayList<>();
         List<AddressDto> addresses = addressesService.getAddresses(id);
 
-        if(addresses != null && !addresses.isEmpty()){
-            Type listType = new TypeToken<List<AddressRest>>() {}.getType();
+        if (addresses != null && !addresses.isEmpty()) {
+            Type listType = new TypeToken<List<AddressRest>>() {
+            }.getType();
             addressesList = new ModelMapper().map(addresses, listType);
-        }
-        return addressesList;
 
+            for (AddressRest addressRest : addressesList) {
+                Link selfLink = WebMvcLinkBuilder
+                        .linkTo(WebMvcLinkBuilder.methodOn(UserController.class).getUserAddresses(id)).withSelfRel();
+
+                addressRest.add(selfLink);
+            }
+        }
+
+        Link userLink = WebMvcLinkBuilder
+                .linkTo(WebMvcLinkBuilder.methodOn(UserController.class).getUser(id)).withRel("user");
+
+        Link selfLink = WebMvcLinkBuilder
+                .linkTo(WebMvcLinkBuilder.methodOn(UserController.class).getUserAddresses(id)).withSelfRel();
+
+        return CollectionModel.of(addressesList, userLink, selfLink);
     }
+
+    // Get - A user address
+
+    @GetMapping(path = "/{id}/addresses/{addressId}",
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}
+    )
+    public EntityModel<AddressRest> getUserAddress(@PathVariable String id, @PathVariable String addressId) {
+        ModelMapper modelMapper = new ModelMapper();
+        AddressDto addressDto = addressesService.getUserAddress(addressId);
+        AddressRest addressRest = modelMapper.map(addressDto, AddressRest.class);
+
+        Link userLink = WebMvcLinkBuilder
+                .linkTo(WebMvcLinkBuilder.methodOn(UserController.class)
+                .getUser(id))
+                .withRel("user");
+
+        Link selfLink = WebMvcLinkBuilder
+                .linkTo(WebMvcLinkBuilder.methodOn(UserController.class)
+                .getUserAddress(id, addressId))
+                .withSelfRel();
+
+        Link userAddressesLink = WebMvcLinkBuilder
+                .linkTo(WebMvcLinkBuilder.methodOn(UserController.class).getUserAddresses(id))
+                .withRel("addresses");
+
+        return EntityModel.of(addressRest, Arrays.asList(userLink, userAddressesLink, selfLink));
+    }
+
+    // Get - All Users
 
     @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public List<UserRest> getUsers(
@@ -83,10 +132,13 @@ public class UserController extends AbstractController<UserDto>{
         return usersList;
     }
 
+    // Created
+
     @PostMapping(
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
             produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE}
     )
+    @ResponseStatus(HttpStatus.CREATED)
     public UserRest createUser(@Valid @RequestBody final UserDetailsRequestModel userDetails) {
         ModelMapper modelMapper = new ModelMapper();
         UserDto userDto = modelMapper.map(userDetails, UserDto.class);
@@ -95,11 +147,14 @@ public class UserController extends AbstractController<UserDto>{
         return modelMapper.map(createdUser, UserRest.class);
     }
 
+    // Update
+
     @PutMapping(
             path = "/{id}",
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
             produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE}
     )
+    @ResponseStatus(HttpStatus.OK)
     public UserRest updateUser(@Valid @RequestBody UserDetailsRequestModel userDetails, @PathVariable String id) {
         ModelMapper modelMapper = new ModelMapper();
         UserDto userDto = modelMapper.map(userDetails, UserDto.class);
@@ -108,10 +163,13 @@ public class UserController extends AbstractController<UserDto>{
         return modelMapper.map(updatedUser, UserRest.class);
     }
 
+    // Delete
+
     @DeleteMapping(
             path = "/{id}",
-            produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE}
+            produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE }
     )
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public OperationStatusModel deleteUser(@PathVariable String id) {
         OperationStatusModel returnValue = new OperationStatusModel();
         returnValue.setOperationName(RequestOperationName.DELETE.name());
@@ -121,27 +179,10 @@ public class UserController extends AbstractController<UserDto>{
 
     }
 
-    @GetMapping(path = "/{id}/refreshtoken")
-    public ResponseEntity<?>  refreshToken( HttpServletRequest request) throws Exception {
-        //get claims fro http
-        DefaultClaims claims = (DefaultClaims) request.getAttribute("claims");
-
-        Map<String, Object> expectedMap = getMapFromIoJsonwebTokenClaims(claims);
-        String token = jwtUtils.doGenerateRefreshToken(expectedMap, expectedMap.get("sub").toString());
-        return ResponseEntity.ok("token successfully refreshed : " +  token);
-
-    }
-
-    public Map<String, Object> getMapFromIoJsonwebTokenClaims(DefaultClaims claims) {
-        Map<String, Object> expectedMap = new HashMap<>();
-        for (Map.Entry<String, Object> entry : claims.entrySet()) {
-            expectedMap.put(entry.getKey(), entry.getValue());
-        }
-        return expectedMap;
-    }
+    // Spring
 
     @Override
-    protected UserService getUserService() {
+    protected final  UserService getUserService() {
         return  userService;
     }
 
