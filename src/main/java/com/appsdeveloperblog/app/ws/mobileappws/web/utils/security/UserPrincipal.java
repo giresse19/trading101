@@ -3,6 +3,7 @@ package com.appsdeveloperblog.app.ws.mobileappws.web.utils.security;
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.entity.Authority;
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.entity.Role;
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.entity.User;
+import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,11 +12,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+@Data
 public class UserPrincipal implements UserDetails {
-    User user;
+    private final User user;
+    private String userId;
 
     public UserPrincipal(User user) {
         this.user = user;
+        this.userId = user.getUserId();
     }
 
     @Override
