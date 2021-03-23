@@ -8,6 +8,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 
 @Data
@@ -50,5 +51,13 @@ public class User implements Serializable {
 
     @OneToMany(mappedBy = "userDetails", cascade = CascadeType.ALL)
     private List<Address> addresses;
+
+    @ManyToMany(cascade = {CascadeType.PERSIST}, fetch = FetchType.EAGER)
+    @JoinTable(name = "users_roles",
+            joinColumns = @JoinColumn(name = "users_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "roles_id", referencedColumnName = "id")
+    )
+    private Collection<Role> roles;
+
 
 }

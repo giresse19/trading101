@@ -1,6 +1,8 @@
 package com.appsdeveloperblog.app.ws.mobileappws.web.utils.security;
 
 import com.appsdeveloperblog.app.ws.mobileappws.SpringApplicationContext;
+import com.appsdeveloperblog.app.ws.mobileappws.persistence.entity.User;
+import com.appsdeveloperblog.app.ws.mobileappws.persistence.repository.UserRepository;
 import com.appsdeveloperblog.app.ws.mobileappws.web.utils.JwtUtils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -10,7 +12,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
@@ -23,8 +24,10 @@ import java.util.ArrayList;
 
 public class AuthorizationFilter extends BasicAuthenticationFilter {
 
-    public AuthorizationFilter(AuthenticationManager authenticationManager) {
+    private UserRepository userRepository;
+    public AuthorizationFilter(AuthenticationManager authenticationManager, UserRepository userRepository) {
         super(authenticationManager);
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -42,43 +45,28 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
 
     private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
 
-        try {
-            String token = request.getHeader(SecurityConstants.HEADER_STRING);
+        String token = request.getHeader(SecurityConstants.HEADER_STRING);
 
-            if (token != null) {
-                token = token.replace(SecurityConstants.TOKEN_PREFIX, "");
-                JwtUtils jwtUtils = (JwtUtils) SpringApplicationContext.getBeans("jwtUtils");
-                Jws<Claims> claims = Jwts.parser().setSigningKey(SecurityConstants.getTokenSecret()).parseClaimsJws(token);
+        if (token != null) {
 
-                UserDetails user = new User(jwtUtils.getUserNameFromToken(token), "", new ArrayList<>());
-                return new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
+            token = token.replace(SecurityConstants.TOKEN_PREFIX, "");
+
+            String user = Jwts.parser()
+                    .setSigningKey(SecurityConstants.getTokenSecret())
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getSubject();
+
+            if (user != null) {
+                User userEntity = userRepository.findByEmail(user);
+                UserPrincipal userPrincipal = new UserPrincipal(userEntity);
+
+                return new UsernamePasswordAuthenticationToken(user, null, userPrincipal.getAuthorities());
             }
+
             return null;
-        } catch (ExpiredJwtException ex) {
-            String isRefreshToken = request.getHeader(SecurityConstants.HEADER_REFRESH_TOKEN);
-            String requestURL = request.getRequestURI();
-
-            if (isRefreshToken != null && isRefreshToken.equals("true") && requestURL.contains("refreshtoken")) {
-                allowForRefreshToken(ex, request);
-            } else {
-                request.setAttribute("Exception", ex);
-            }
-        } catch (BadCredentialsException ex) {
-            request.setAttribute("Exception", ex);
-        } catch (Exception ex) {
-            System.out.println(ex);
         }
         return null;
     }
 
-    private void allowForRefreshToken(ExpiredJwtException ex, HttpServletRequest request) {
-        // create a UsernamePasswordAuthenticationToken with null values.
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-                null, null, null);
-
-        SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-
-        // Set the claims so that in controller we will be using it to create new JWT
-        request.setAttribute("claims", ex.getClaims());
-    }
 }

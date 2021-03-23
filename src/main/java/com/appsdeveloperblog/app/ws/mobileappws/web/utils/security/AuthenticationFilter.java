@@ -11,6 +11,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -31,12 +32,19 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest req,
-                                                HttpServletResponse res) throws DataIntegrityViolationException {
+                                                HttpServletResponse res) throws AuthenticationException {
 
         try {
-            UserLoginRequestModel cred = new ObjectMapper().readValue(req.getInputStream(), UserLoginRequestModel.class);
+
+            //todo: Handle case were invalid username(email) exception
+            UserLoginRequestModel cred = new ObjectMapper()
+                    .readValue(req.getInputStream(), UserLoginRequestModel.class);
+
             return authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(cred.getEmail(),cred.getPassword(),new ArrayList<>())
+                    new UsernamePasswordAuthenticationToken(
+                            cred.getEmail(),
+                            cred.getPassword(),
+                            new ArrayList<>())
             );
 
         } catch (IOException e) {
@@ -49,7 +57,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                                          HttpServletResponse res,
                                          FilterChain chain,
                                          Authentication auth) throws IOException, ServletException {
-        String userName = ((User) auth.getPrincipal()).getUsername();
+        String userName = ((UserPrincipal) auth.getPrincipal()).getUsername();
 
         String token = Jwts.builder()
                 .setSubject(userName)

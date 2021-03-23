@@ -6,6 +6,7 @@ import com.appsdeveloperblog.app.ws.mobileappws.dto.Utils;
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.entity.User;
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.model.response.ErrorMessages;
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.repository.UserRepository;
+import com.appsdeveloperblog.app.ws.mobileappws.web.utils.security.UserPrincipal;
 import com.appsdeveloperblog.app.ws.mobileappws.web.utils.service.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
@@ -110,8 +111,11 @@ public class UserServiceImpl implements UserService<UserDto>{
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email);
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getEncryptedPassword(),
-                new ArrayList<>());
+
+//        return new org.springframework.security.core.userdetails.User(
+//                user.getEmail(), user.getEncryptedPassword(),
+//                new ArrayList<>());
+        return new UserPrincipal(user);
     }
 
 }
