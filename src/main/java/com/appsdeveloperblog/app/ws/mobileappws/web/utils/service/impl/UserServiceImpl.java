@@ -3,8 +3,10 @@ package com.appsdeveloperblog.app.ws.mobileappws.web.utils.service.impl;
 import com.appsdeveloperblog.app.ws.mobileappws.dto.AddressDto;
 import com.appsdeveloperblog.app.ws.mobileappws.dto.UserDto;
 import com.appsdeveloperblog.app.ws.mobileappws.dto.Utils;
+import com.appsdeveloperblog.app.ws.mobileappws.persistence.entity.Role;
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.entity.User;
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.model.response.ErrorMessages;
+import com.appsdeveloperblog.app.ws.mobileappws.persistence.repository.RoleRepository;
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.repository.UserRepository;
 import com.appsdeveloperblog.app.ws.mobileappws.web.utils.security.UserPrincipal;
 import com.appsdeveloperblog.app.ws.mobileappws.web.utils.service.UserService;
@@ -20,20 +22,26 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 
 @Service
 public class UserServiceImpl implements UserService<UserDto>{
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final Utils utils;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, Utils utils, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, Utils utils,
+                           BCryptPasswordEncoder bCryptPasswordEncoder,
+                           RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.utils = utils;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.roleRepository = roleRepository;
     }
 
     @Override
@@ -54,9 +62,25 @@ public class UserServiceImpl implements UserService<UserDto>{
         userEntity.setUserId(publicUserId);
         userEntity.setEncryptedPassword(bCryptPasswordEncoder.encode(user.getPassword()));
 
-        User storedUserDetails = userRepository.save(userEntity);
+        // set roles
+        Collection<Role> roles = new HashSet<>();
 
-        return modelMapper.map(storedUserDetails, UserDto.class);
+        for (String role : user.getRoles()) {
+            Role roleEntity = roleRepository.findByName(role);
+            if (roleEntity != null) {
+                roles.add(roleEntity);
+            }
+        }
+
+        userEntity.setRoles(roles);
+
+        User storedUserDetails = userRepository.save(userEntity);
+        UserDto userReturned = new UserDto();
+        BeanUtils.copyProperties(storedUserDetails, userReturned);
+
+        // UserDto userReturned = modelMapper.map(storedUserDetails, UserDto.class);
+
+        return userReturned;
     }
 
     @Override

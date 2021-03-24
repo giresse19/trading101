@@ -6,6 +6,7 @@ import com.appsdeveloperblog.app.ws.mobileappws.persistence.model.response.*;
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.model.response.request.UserDetailsRequestModel;
 import com.appsdeveloperblog.app.ws.mobileappws.web.utils.JwtUtils;
 import com.appsdeveloperblog.app.ws.mobileappws.web.utils.UrlMappings;
+import com.appsdeveloperblog.app.ws.mobileappws.web.utils.security.SecurityConstants;
 import com.appsdeveloperblog.app.ws.mobileappws.web.utils.service.AddressesService;
 import com.appsdeveloperblog.app.ws.mobileappws.web.utils.service.UserService;
 import io.jsonwebtoken.impl.DefaultClaims;
@@ -145,6 +146,7 @@ public class UserController extends AbstractController<UserDto>{
     public UserRest createUser(@Valid @RequestBody final UserDetailsRequestModel userDetails) {
         ModelMapper modelMapper = new ModelMapper();
         UserDto userDto = modelMapper.map(userDetails, UserDto.class);
+        userDto.setRoles(new HashSet<>(Arrays.asList(SecurityConstants.ROLE_USER)));
         UserDto createdUser = createInternal(userDto);
 
         return modelMapper.map(createdUser, UserRest.class);

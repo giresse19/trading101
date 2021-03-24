@@ -43,8 +43,8 @@ private final BCryptPasswordEncoder bCryptPasswordEncoder;
        Authority writeAuthority = createAuthority(SecurityConstants.WRITE_AUTHORITY);
        Authority deleteAuthority = createAuthority(SecurityConstants.DELETE_AUTHORITY);
 
-       Role roleUser = createRole("ROLE_USER", Arrays.asList(readAuthority, writeAuthority));
-       Role roleAdmin =  createRole("ROLE_ADMIN", Arrays.asList(readAuthority, writeAuthority, deleteAuthority));
+       createRole(SecurityConstants.ROLE_USER, Arrays.asList(readAuthority, writeAuthority));
+       Role roleAdmin =  createRole(SecurityConstants.ROLE_ADMIN, Arrays.asList(readAuthority, writeAuthority, deleteAuthority));
 
        if(roleAdmin == null) return ;
 

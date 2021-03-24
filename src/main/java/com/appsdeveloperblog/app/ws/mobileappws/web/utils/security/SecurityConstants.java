@@ -15,6 +15,8 @@ public class SecurityConstants {
     public static final String WRITE_AUTHORITY = "WRITE_AUTHORITY";
     public static final String DELETE_AUTHORITY = "DELETE_AUTHORITY";
     public static final String DELETE_ALL_AUTHORITY = "DELETE_AUTHORITY";
+    public static final String ROLE_USER = "ROLE_USER";
+    public static final String ROLE_ADMIN = "ROLE_ADMIN";
 
     public static String getTokenSecret() {
         AppProperties appProperties = (AppProperties) SpringApplicationContext.getBeans("appProperties");

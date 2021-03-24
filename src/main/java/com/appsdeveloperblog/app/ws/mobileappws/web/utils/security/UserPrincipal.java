@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 @Data
@@ -24,8 +25,8 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        List<Authority> authorityEntities = new ArrayList<>();
+        Collection<GrantedAuthority> authorities = new HashSet<>();
+        Collection<Authority> authorityEntities = new HashSet<>();
 
         //get user roles
         Collection<Role> roles = user.getRoles();
