@@ -12,20 +12,34 @@
       <span style="cursor: pointer">TRADING101</span>
     </div>
     <v-spacer></v-spacer>
-    <the-tab> </the-tab>
+    <v-card>
+      <v-tabs class="tabs">
+        <v-tab v-for="tab of tabs" :key="tab.id" :to="tab.route" exact>
+          {{ tab.name }}
+        </v-tab>
+
+        <v-tab-item v-for="tab of tabs" :key="tab.id" :value="tab.route">
+          <router-view></router-view>
+        </v-tab-item>
+      </v-tabs>
+    </v-card>
   </v-app-bar>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
-import TheTab from "./TheTab.vue";
+import { Component, Vue } from "vue-property-decorator";
+import Homepage from "@/views/Homepage.vue";
 
-@Component({
-  components: {
-    TheTab,
-  },
-})
-export default class TheHeader extends Vue {}
+
+@Component()
+export default class TheHeader extends Vue {
+  tabs: Array<any> = [
+    {id: 1, name: "Home", route: `/home`},
+    {id: 2, name: "About Us", route: `/about`},
+    {id: 3, name: "Sign Up", route: `/signup`},
+    {id: 4, name: "login", route: `/login`},
+  ];
+}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
