@@ -41,7 +41,6 @@
   </v-card>
 </template>
 
-
 <script lang="ts">
 import {Component, Prop, Vue} from "vue-property-decorator";
 import Homepage from "@/views/Homepage.vue";
