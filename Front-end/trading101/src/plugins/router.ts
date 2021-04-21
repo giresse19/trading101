@@ -1,10 +1,5 @@
 import Vue from "vue";
 import Router from "vue-router";
-import HomePage from "@/views/Homepage.vue";
-import Login from "@/views/Login.vue";
-import SignUp from "@/views/SignUp.vue";
-import About from "@/views/About.vue";
-
 
 Vue.use(Router);
 
@@ -12,20 +7,29 @@ export default new Router({
     routes: [
         {
             path: "/",
-            component: HomePage
+            name: 'home',
+            component: () => import('../views/Homepage.vue')
         },
         {
             path: "/about",
-            component: About
+            name: 'about',
+            component: () => import('../views/About.vue')
         },
         {
             path: "/SignUp",
-            component: SignUp
+            name: 'Signup',
+            component: () => import('../views/SignUp.vue')
         },
         {
             path: "/login",
-            component: Login
+            name: 'login',
+            component: () => import('../views/Login.vue')
         },
+        {
+            path: '/forgot-password',
+            name: 'forgot-password',
+            component: () => import('../views/forgot-password.vue')
+        }
 
     ],
     mode: "history"

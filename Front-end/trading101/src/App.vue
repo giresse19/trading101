@@ -72,9 +72,40 @@ export default class App extends Vue {
   font-weight: normal;
 }
 
+
+a{
+  text-decoration: none;
+}
 .app-tabs{
   display: flex;
   justify-content: space-between;
 }
+.pa-2 {
+  height: 100%;
+  width: 100%;
+  border-width: thin;
+  display: grid;
+  outline: none;
+  text-decoration: none;
+  transition-property: box-shadow, opacity;
+  overflow-wrap: break-word;
+  position: relative;
+  white-space: normal;
+}
 
+.right-body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 2px;
+  padding: 4px;
+}
+
+input:focus {
+  background-color: #831829;
+}
+//
+//.theme--light.v-text-field--solo > .v-input__control > .v-input__slot {
+//  background: powderblue;
+//}
 </style>
