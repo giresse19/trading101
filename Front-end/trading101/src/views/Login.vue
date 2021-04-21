@@ -17,31 +17,33 @@
               <v-card-text>
                 <v-form v-model="isValid">
                   <v-text-field
-                      ref="email"
                       label="Email"
                       v-model="email"
-                      :rules="[() => !!email || 'E-mail is required']"
                       required
-                      background-color="red lighten-2"
+                      :rules="[
+                          () => !!email || 'E-mail is required',
+                          () => /.+@.+/.test(email) || 'E-mail must be valid']"
                   >
-
                   </v-text-field>
                   <v-text-field
                       label="Password"
                       v-model="password"
+                      :rules="[
+                          () => !!password || 'password field is required',
+                          () => (password && password.length > 5),
+                          () => /(?=.*[A-Z])/.test(password) || 'Must have one uppercase character',
+                          () => /(?=.*\d)/.test(password) || 'Must have one number',
+                          () => /([!@$%])/.test(password) || 'Must have one special character [!@#$%]']"
                       type="password"
-                      :rules="[() => !!password || 'Password is required']"
                       required
-                      background-color="red lighten-2"
                   >
-
                   </v-text-field>
                 </v-form>
               </v-card-text>
 
               <v-card-actions>
                 <v-btn
-                    color="success"
+                    class="btn-style"
                     :disabled="!isValid">
                   Login
                 </v-btn>

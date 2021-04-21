@@ -9,88 +9,76 @@
         <div class="pa-2" style="background-color: #B8DBE1">
           <div class="right-body">
             <v-card
-                height="80%"
+                height="70%"
                 width="50%"
             >
               <v-card-title>Sign Up</v-card-title>
               <v-card-text>
                 <v-form v-model="isValid">
                   <v-text-field
-                      ref="firstName"
                       label="First Name"
                       v-model="firstname"
-                      :rules="() => !!firstname || 'firstName is required'"
+                      :rules="[() => !!firstname || 'firstName is required']"
                       required
-                      solo-inverted
-                      background-color="red lighten-2"
                   >
                   </v-text-field>
                   <v-text-field
-                      ref="lastName"
                       label="Last Name"
                       v-model="lastname"
-                      :rules="() => !!lastname || 'lastName is required'"
+                      :rules="[() => !!lastname || 'lastName is required']"
                       required
-                      solo-inverted
-                      background-color="red lighten-2"
                   >
                   </v-text-field>
                   <v-text-field
-                      ref="streetName"
-                      :rules="addressRule"
                       v-model="streetName"
                       label="Street Name"
                       hint="Including House No"
                       counter="25"
                       required
-                      solo-inverted
-                      background-color="red lighten-2"
+                      :rules="[() => !!this.streetName || 'This field is required',
+                               () => !!this.streetName && this.streetName.length <= 25 || 'Street name must be less than 25 characters']"
                   ></v-text-field>
                   <v-text-field
-                      ref="city"
-                      :rules="[() => !!city || 'This field is required']"
                       v-model="city"
                       label="City"
                       required
-                      solo-inverted
-                      background-color="red lighten-2"
+                      :rules="[() => !!city || 'City field is required']"
                   ></v-text-field>
                   <v-text-field
-                      ref="postalCode"
-                      :rules="[() => !!postalCode || 'This field is required']"
                       v-model="postalCode"
                       label="ZIP / Postal Code"
                       required
-                      solo-inverted
-                      background-color="red lighten-2"
+                      :rules="[() => !!postalCode || 'postal code field is required']"
                   ></v-text-field>
                   <v-autocomplete
                       :filter="customFilter"
-                      :rules="[() => !!country || 'This field is required']"
                       v-model="country"
                       item-text="name"
                       label="Country"
                       :items="countries"
                       required
-                      solo-inverted
-                  ></v-autocomplete>
+                      :rules="[() => !!email || 'country is required']">
+                      ></v-autocomplete>
                   <v-text-field
                       label="Email"
                       v-model="email"
-                      :rules="emailRules"
                       required
-                      solo-inverted
-                      background-color="blue"
+                      :rules="[
+                          () => !!email || 'E-mail is required',
+                          () => /.+@.+/.test(email) || 'E-mail must be valid']"
                   >
                   </v-text-field>
                   <v-text-field
                       label="Password"
                       v-model="password"
+                      :rules="[
+                          () => !!password || 'password field is required',
+                          () => (password && password.length > 5),
+                          () => /(?=.*[A-Z])/.test(password) || 'Must have one uppercase character',
+                          () => /(?=.*\d)/.test(password) || 'Must have one number',
+                          () => /([!@$%])/.test(password) || 'Must have one special character [!@#$%]']"
                       type="password"
-                      :rules="passwordRules"
                       required
-                      solo-inverted
-                      background-color="blue"
                   >
                   </v-text-field>
                 </v-form>
@@ -98,7 +86,7 @@
 
               <v-card-actions>
                 <v-btn
-                    color="success"
+                    class="btn-style"
                     :disabled="!isValid">
                   Sign Up
                 </v-btn>
@@ -150,7 +138,6 @@ export default class SignUp extends Vue {
   postalCode='';
   country='';
   isValid = true;
-
   countries:Array<any> = [
     { name: 'Estonia', abbr: 'EE', id: 1 },
     { name: 'Georgia', abbr: 'GA', id: 2 },
@@ -160,25 +147,7 @@ export default class SignUp extends Vue {
     { name: 'Sweden', abbr: 'SV', id: 6 },
   ];
 
-  emailRules: Array<any> = [
-    () => !!this.email || 'E-mail is required',
-    (v: any) => /.+@.+/.test(v) || 'E-mail must be valid',
-  ]
-
-  addressRule: Array<any> = [
-    () => !!this.streetName || 'This field is required',
-    () => !!this.streetName && this.streetName.length <= 25 || 'Address must be less than 25 characters',
-  ]
-
-  passwordRules: Array<any> = [
-    () => !!this.password || 'Password is required',
-    (v: any) => (v && v.length >= 5) || 'Password must have 5+ characters',
-    (v: any) => /(?=.*[A-Z])/.test(v) || 'Must have one uppercase character',
-    (v: any) => /(?=.*\d)/.test(v) || 'Must have one number',
-    (v: any) => /([!@$%])/.test(v) || 'Must have one special character [!@#$%]'
-  ];
-
-  customFilter (item:any, queryText:any, itemText:any) {
+  customFilter (item:any, queryText:string, itemText:any) {
     const textOne = item.name.toLowerCase()
     const textTwo = item.abbr.toLowerCase()
     const searchText = queryText.toLowerCase()
@@ -196,5 +165,7 @@ export default class SignUp extends Vue {
   text-align: center;
   padding: 4px;
 }
+
+
 
 </style>

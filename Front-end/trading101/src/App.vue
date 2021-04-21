@@ -1,5 +1,5 @@
 <template>
-  <v-card id="app">
+  <v-card id="app" data-app>
     <v-toolbar
         dark
         flat
@@ -101,11 +101,7 @@ a{
   padding: 4px;
 }
 
-input:focus {
-  background-color: #831829;
+.btn-style{
+  color: #114b5f;
 }
-//
-//.theme--light.v-text-field--solo > .v-input__control > .v-input__slot {
-//  background: powderblue;
-//}
 </style>
