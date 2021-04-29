@@ -14,7 +14,7 @@
             >
               <v-card-title>Sign Up</v-card-title>
               <v-card-text>
-                <v-form v-model="isValid">
+                <v-form v-model="isValid" @submit.prevent="postFormData">
                   <v-text-field
                       label="First Name"
                       v-model="firstname"
@@ -58,7 +58,8 @@
                       :items="countries"
                       required
                       :rules="[() => !!email || 'country is required']">
-                      ></v-autocomplete>
+                    >
+                  </v-autocomplete>
                   <v-text-field
                       label="Email"
                       v-model="email"
@@ -87,7 +88,8 @@
               <v-card-actions>
                 <v-btn
                     class="btn-style"
-                    :disabled="!isValid">
+                    :disabled="!isValid"
+                    @click="postFormData">
                   Sign Up
                 </v-btn>
               </v-card-actions>
@@ -109,45 +111,62 @@
           <div class="right-body">
             <h3 style="color: #114b5f;">
                 <span class="right-text">
-               Welcome to  <span style="font-family: 'Rage Italic',serif; font-weight: bolder">TRADING101,</span> signup and get the most exciting trading <br> experience driven by our
+               Welcome to  <span style="font-family: 'Rage Italic',serif; font-weight: bolder">TRADING101,
+                </span> signup and get the most exciting trading <br> experience driven by our
           advance predictive trading algorithms.
                    </span>
-
             </h3>
           </div>
         </div>
       </v-col>
     </v-row>
+    <div>
+          <span v-if="showNotification">
+              <notification text="Success, re-directing to login page.">
+                </notification>
+            </span>
+    </div>
+
+
   </v-container>
 </template>
 
 <script lang="ts">
 import {Component, Vue} from "vue-property-decorator";
+import config from "@/config/config";
+import Notification from "@/views/Notification.vue";
+import {LoadingControl} from "@/model/LoadingControl";
 
 @Component({
-  components: {},
+  components: {Notification},
 })
 export default class SignUp extends Vue {
 
+  loadingControl: LoadingControl = {
+    success: false,
+    message: '',
+  };
   firstname = '';
   lastname = '';
   email = '';
-  city='';
+  city = '';
   password = '';
-  streetName='';
-  postalCode='';
-  country='';
+  streetName = '';
+  postalCode = '';
+  country = '';
   isValid = true;
-  countries:Array<any> = [
-    { name: 'Estonia', abbr: 'EE', id: 1 },
-    { name: 'Georgia', abbr: 'GA', id: 2 },
-    { name: 'United States', abbr: 'US', id: 3 },
-    { name: 'Cameroon', abbr: 'CA', id: 4 },
-    { name: 'Germany', abbr: 'NY', id: 5 },
-    { name: 'Sweden', abbr: 'SV', id: 6 },
+  countries: Array<any> = [
+    {name: 'Estonia', abbr: 'EE', id: 1},
+    {name: 'Georgia', abbr: 'GA', id: 2},
+    {name: 'United States', abbr: 'US', id: 3},
+    {name: 'Cameroon', abbr: 'CA', id: 4},
+    {name: 'Germany', abbr: 'NY', id: 5},
+    {name: 'Sweden', abbr: 'SV', id: 6},
   ];
+  alert= false;
 
-  customFilter (item:any, queryText:string, itemText:any) {
+  customFilter(item: any, queryText: string) {
+
     const textOne = item.name.toLowerCase()
     const textTwo = item.abbr.toLowerCase()
     const searchText = queryText.toLowerCase()
@@ -155,6 +174,44 @@ export default class SignUp extends Vue {
     return textOne.indexOf(searchText) > -1 ||
         textTwo.indexOf(searchText) > -1
   };
+
+  get showNotification(): boolean {
+    return this.loadingControl.success;
+  };
+
+  async postFormData() {
+    const formData = {
+      'firstName': this.firstname,
+      'lastName': this.firstname,
+      'email': this.email,
+      'password': this.password,
+      'addresses': [
+        {
+          'city': this.city,
+          'country': this.country,
+          'streetName': this.streetName,
+          'postalCode': this.postalCode
+        }
+      ]
+    };
+
+    const response = await fetch(`${config.BASE_URL}/${config.SIGN_UP}`, config.fetchOptions(JSON.stringify(formData)));
+    if (response.status === 201) {
+      this.loadingControl.success = true;
+      this.loadingControl.message = 'Success, re-directing to login page.'
+      debugger
+      // await this.$router.push('login');
+
+    } else {
+      this.alert = true
+      this.loadingControl.success = false;
+      this.loadingControl.message = 'Could not sign in, please try again later. Re-directing to home page.'
+      debugger;
+      // await this.$router.push('home')
+    }
+  };
+
+
 }
 </script>
 <style scoped lang="scss">
@@ -165,7 +222,6 @@ export default class SignUp extends Vue {
   text-align: center;
   padding: 4px;
 }
-
 
 
 </style>
