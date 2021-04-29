@@ -7,6 +7,7 @@ import com.appsdeveloperblog.app.ws.mobileappws.persistence.repository.Addresses
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.repository.UserRepository;
 import com.appsdeveloperblog.app.ws.mobileappws.web.utils.service.AddressesService;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -42,6 +43,10 @@ public class AdressesServiceImp implements AddressesService<AddressDto> {
     @Override
     public AddressDto getUserAddress(String addressId) {
         Address address = addressesRepository.findByAddressId(addressId);
-        return new ModelMapper().map(address, AddressDto.class);
+        AddressDto addressDto = new AddressDto();
+        BeanUtils.copyProperties(address, addressDto);
+
+//        return new ModelMapper().map(address, AddressDto.class);
+        return  addressDto;
     }
 }

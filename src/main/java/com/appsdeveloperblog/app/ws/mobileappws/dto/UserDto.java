@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -20,6 +21,8 @@ public class UserDto implements INameableDto {
     private String lastName;
     private String email;
     private String password;
+    private Date createdAt;
+    private Date updatedAt;
     private List<AddressDto> addresses;
     private String encryptedPassword;
     private String emailVerificationToken;

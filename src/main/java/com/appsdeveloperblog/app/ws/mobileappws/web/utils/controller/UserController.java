@@ -147,8 +147,8 @@ public class UserController extends AbstractController<UserDto>{
         ModelMapper modelMapper = new ModelMapper();
         UserDto userDto = modelMapper.map(userDetails, UserDto.class);
         userDto.setRoles(new HashSet<>(Arrays.asList(SecurityConstants.ROLE_USER)));
-        UserDto createdUser = createInternal(userDto);
 
+        UserDto createdUser = createInternal(userDto);
         return modelMapper.map(createdUser, UserRest.class);
     }
 

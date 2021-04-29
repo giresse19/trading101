@@ -21,10 +21,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 
 @Service
@@ -61,7 +58,6 @@ public class UserServiceImpl implements UserService<UserDto>{
 
         userEntity.setUserId(publicUserId);
         userEntity.setEncryptedPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-
         // set roles
         Collection<Role> roles = new HashSet<>();
 
@@ -77,9 +73,7 @@ public class UserServiceImpl implements UserService<UserDto>{
         User storedUserDetails = userRepository.save(userEntity);
         UserDto userReturned = new UserDto();
         BeanUtils.copyProperties(storedUserDetails, userReturned);
-
         // UserDto userReturned = modelMapper.map(storedUserDetails, UserDto.class);
-
         return userReturned;
     }
 
@@ -88,14 +82,25 @@ public class UserServiceImpl implements UserService<UserDto>{
         User fetchedUser = userRepository.findByEmail(email);
         UserDto user = new UserDto();
         BeanUtils.copyProperties(fetchedUser, user);
+
+      //  UserDto newUser = userRepository.setLoginStatus(true, id);
         return user;
     }
 
+
     @Override
     public UserDto getUserByUserId(String id) {
-        User user = userRepository.findByUserId(id);
-        return new ModelMapper().map(user, UserDto.class);
+        User fetchedUser = userRepository.findByUserId(id);
+        UserDto user = new UserDto();
+
+         // update last login
+        userRepository.updateLastLogin(new Date(System.currentTimeMillis()), id);
+        BeanUtils.copyProperties(fetchedUser, user);
+//        return new ModelMapper().map(user, UserDto.class);
+
+        return user;
     }
+
 
     @Override
     public UserDto updateUser(String id, UserDto user) {
@@ -109,7 +114,7 @@ public class UserServiceImpl implements UserService<UserDto>{
 
     @Override
     public List<UserDto> getUsers(int page, int limit) {
-        ModelMapper modelMapper = new ModelMapper();
+        // modelMapper = new ModelMapper();
         List<UserDto> usersContent = new ArrayList<>();
 
         if (page > 0) page = page - 1;
@@ -120,8 +125,9 @@ public class UserServiceImpl implements UserService<UserDto>{
         List<User> users = userEntityPage.getContent();
 
         for (User user : users) {
-            UserDto userDto = modelMapper.map(user, UserDto.class);
-            usersContent.add(userDto);
+            UserDto newUser = new UserDto();
+            BeanUtils.copyProperties(user,  newUser);
+            usersContent.add(newUser);
         }
         return usersContent;
     }
@@ -132,14 +138,15 @@ public class UserServiceImpl implements UserService<UserDto>{
         userRepository.delete(user);
     }
 
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email);
 
-//        return new org.springframework.security.core.userdetails.User(
-//                user.getEmail(), user.getEncryptedPassword(),
-//                new ArrayList<>());
-        return new UserPrincipal(user);
+        return new org.springframework.security.core.userdetails.User(
+                user.getEmail(), user.getEncryptedPassword(),
+                new ArrayList<>());
+//        return new UserPrincipal(user);
     }
 
 }

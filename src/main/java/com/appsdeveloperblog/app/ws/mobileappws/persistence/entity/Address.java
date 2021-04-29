@@ -1,6 +1,5 @@
 package com.appsdeveloperblog.app.ws.mobileappws.persistence.entity;
 
-import com.appsdeveloperblog.app.ws.mobileappws.dto.UserDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -43,10 +42,7 @@ public class Address implements Serializable {
     @Column(nullable = false, length = 7)
     private String postalCode;
 
-    @Column(nullable = false, length = 10)
-    private String type;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "users_id")
     private User userDetails;
 }

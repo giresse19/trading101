@@ -6,6 +6,7 @@ import com.appsdeveloperblog.app.ws.mobileappws.persistence.model.response.Addre
 import com.appsdeveloperblog.app.ws.mobileappws.web.utils.UrlMappings;
 import com.appsdeveloperblog.app.ws.mobileappws.web.utils.service.AddressesService;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.MediaType;

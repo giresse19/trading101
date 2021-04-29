@@ -15,7 +15,6 @@ public class AddressDto implements INameableDto {
     private String country;
     private String streetName;
     private String postalCode;
-    private String type;
     private UserDto userDetails;
 
     @Override

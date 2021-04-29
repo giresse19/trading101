@@ -3,12 +3,15 @@ package com.appsdeveloperblog.app.ws.mobileappws.persistence.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -49,6 +52,16 @@ public class User implements Serializable {
     @Column(nullable = false)
     private Boolean emailVerificationStatus = false;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Date createdAt;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private Date updatedAt;
+
     @OneToMany(mappedBy = "userDetails", cascade = CascadeType.ALL)
     private List<Address> addresses;
 
@@ -58,6 +71,5 @@ public class User implements Serializable {
             inverseJoinColumns = @JoinColumn(name = "roles_id", referencedColumnName = "id")
     )
     private Collection<Role> roles;
-
 
 }

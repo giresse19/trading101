@@ -3,7 +3,7 @@ package com.appsdeveloperblog.app.ws.mobileappws.persistence.model.response;
 public enum ErrorMessages {
 
     MISSING_REQUIRED_FIELD("Missing required field, Please check documentation for required fields"),
-    RECORD_ALREADY_EXISTS("Record already exist"),
+    RECORD_ALREADY_EXISTS("User with this email already exist"),
     INTERNAL_SERVER_ERROR("Internal server error"),
     RECORD_NOT_FOUND("Record not found"),
     FAILED_PRECONDITION("Resource precondition failed"),
