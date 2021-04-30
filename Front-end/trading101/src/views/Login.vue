@@ -1,6 +1,11 @@
 <template>
   <v-container class="grey lighten-5">
+ <span v-if="$store.state.isFormSubmitted">
+<TheNotification text='Account created, redirected to Login Page!'>
+</TheNotification>
+ </span>
     <v-row no-gutters style="height: 1000px">
+
       <v-col
           cols="12"
           sm="12"
@@ -76,20 +81,23 @@
         </div>
       </v-col>
     </v-row>
+
   </v-container>
 </template>
 
 <script lang="ts">
 import {Component, Vue} from "vue-property-decorator";
+import TheNotification from "@/views/TheNotification.vue";
 
 @Component({
-  components: {},
+  components: {TheNotification},
 })
 
 export default class Login extends Vue {
   email = '';
   password = '';
   isValid = true;
+
 }
 </script>
 

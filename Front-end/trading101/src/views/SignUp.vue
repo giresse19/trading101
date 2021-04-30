@@ -120,32 +120,19 @@
         </div>
       </v-col>
     </v-row>
-    <div>
-          <span v-if="showNotification">
-              <notification text="Success, re-directing to login page.">
-                </notification>
-            </span>
-    </div>
-
-
   </v-container>
 </template>
 
 <script lang="ts">
 import {Component, Vue} from "vue-property-decorator";
 import config from "@/config/config";
-import Notification from "@/views/Notification.vue";
-import {LoadingControl} from "@/model/LoadingControl";
+import {setFormSubmissionStatusToTrue, setFormSubmissionStatusToFalse} from '@/store/actions';
+import TheNotification from "@/views/TheNotification.vue";
 
 @Component({
-  components: {Notification},
+  components: {TheNotification},
 })
 export default class SignUp extends Vue {
-
-  loadingControl: LoadingControl = {
-    success: false,
-    message: '',
-  };
   firstname = '';
   lastname = '';
   email = '';
@@ -175,10 +162,6 @@ export default class SignUp extends Vue {
         textTwo.indexOf(searchText) > -1
   };
 
-  get showNotification(): boolean {
-    return this.loadingControl.success;
-  };
-
   async postFormData() {
     const formData = {
       'firstName': this.firstname,
@@ -196,18 +179,14 @@ export default class SignUp extends Vue {
     };
 
     const response = await fetch(`${config.BASE_URL}/${config.SIGN_UP}`, config.fetchOptions(JSON.stringify(formData)));
-    if (response.status === 201) {
-      this.loadingControl.success = true;
-      this.loadingControl.message = 'Success, re-directing to login page.'
-      debugger
-      // await this.$router.push('login');
-
+    if (response.ok) {
+      await this.$store.dispatch(setFormSubmissionStatusToTrue);
+      await this.$router.push('login');
     } else {
-      this.alert = true
-      this.loadingControl.success = false;
-      this.loadingControl.message = 'Could not sign in, please try again later. Re-directing to home page.'
-      debugger;
-      // await this.$router.push('home')
+      console.log("response",  response)
+      alert("Account creation failed, please check logging credentials!")
+      await this.$store.dispatch(setFormSubmissionStatusToFalse);
+
     }
   };
 
