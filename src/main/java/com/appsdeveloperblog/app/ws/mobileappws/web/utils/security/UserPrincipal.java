@@ -3,6 +3,8 @@ package com.appsdeveloperblog.app.ws.mobileappws.web.utils.security;
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.entity.Authority;
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.entity.Role;
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.entity.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -12,16 +14,27 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
+@AllArgsConstructor
 public class UserPrincipal implements UserDetails {
-    private final User user;
+    private static final long serialVersionUID = 1L;
+    private User user;
+
     private String userId;
+
+    @JsonIgnore
+    private String password;
+
+    private Collection<? extends GrantedAuthority> authorities;
+
 
     public UserPrincipal(User user) {
         this.user = user;
         this.userId = user.getUserId();
     }
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -72,6 +85,12 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return this.user.getEmailVerificationStatus();
+//        return this.user.getEmailVerificationStatus();
+        return true;
+  }
+
+    
+    public static UserPrincipal build(User user) {
+        return new UserPrincipal(user);
     }
 }

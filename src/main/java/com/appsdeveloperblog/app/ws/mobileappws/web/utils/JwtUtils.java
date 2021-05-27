@@ -1,43 +1,52 @@
 package com.appsdeveloperblog.app.ws.mobileappws.web.utils;
 
-import com.appsdeveloperblog.app.ws.mobileappws.Exceptions.BadCredentialException;
-import com.appsdeveloperblog.app.ws.mobileappws.Exceptions.JwtExceptions;
-import com.appsdeveloperblog.app.ws.mobileappws.persistence.model.response.ErrorMessages;
 import com.appsdeveloperblog.app.ws.mobileappws.web.utils.security.SecurityConstants;
+import com.appsdeveloperblog.app.ws.mobileappws.web.utils.security.UserPrincipal;
 import io.jsonwebtoken.*;
-import lombok.Data;
-import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
-import java.util.Map;
 
-@Service
-@Data
+@Component
 public class JwtUtils {
 
-    public boolean validateToken(String authToken, HttpServletRequest request) throws JwtExceptions, ExpiredJwtException {
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
+
+    public String generateJwtToken(Authentication auth) {
+//        String userName = ((User) auth.getPrincipal()).getUsername();
+        String userName = ((UserPrincipal) auth.getPrincipal()).getUsername();
+
+        return Jwts.builder()
+                .setSubject(userName)
+                .setExpiration(new Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
+                .signWith(SignatureAlgorithm.HS512, SecurityConstants.getTokenSecret())
+                .compact();
+    }
+
+    public String getUserNameFromJwtToken(String token) {
+        return Jwts.parser().setSigningKey(SecurityConstants.getTokenSecret()).parseClaimsJws(token).getBody().getSubject();
+    }
+
+    public boolean validateJwtToken(String authToken) {
         try {
-            //jwt token has not been tampered with
-            Jws<Claims> claims = Jwts.parser().setSigningKey(SecurityConstants.getTokenSecret()).parseClaimsJws(authToken);
+            Jwts.parser().setSigningKey(SecurityConstants.getTokenSecret()).parseClaimsJws(authToken);
             return true;
-        } catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException exception) {
-            throw new BadCredentialException(ErrorMessages.AUTHENTICATION_FAILED.getErrorMessage());
-        } catch (ExpiredJwtException exception) {
-            throw new JwtExceptions(ErrorMessages.JWT_EXPIRED.getErrorMessage(), exception);
+        } catch (SignatureException e) {
+            logger.error("Invalid JWT signature: {}", e.getMessage());
+        } catch (MalformedJwtException e) {
+            logger.error("Invalid JWT token: {}", e.getMessage());
+        } catch (ExpiredJwtException e) {
+            logger.error("JWT token is expired: {}", e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            logger.error("JWT token is unsupported: {}", e.getMessage());
+        } catch (IllegalArgumentException e) {
+            logger.error("JWT claims string is empty: {}", e.getMessage());
         }
-    }
 
-    public String getUserNameFromToken(String token) {
-        Claims claims = Jwts.parser().setSigningKey(SecurityConstants.getTokenSecret()).parseClaimsJws(token).getBody();
-        return claims.getSubject();
-    }
-
-    public String doGenerateRefreshToken(Map<String, Object> claims, String subject) {
-        return Jwts.builder().setClaims(claims).setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + SecurityConstants.REFRESH_EXPIRATION_TIME))
-                .signWith(SignatureAlgorithm.HS512, SecurityConstants.getTokenSecret()).compact();
-
+        return false;
     }
 
 }

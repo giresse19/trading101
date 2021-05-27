@@ -2,8 +2,10 @@ package com.appsdeveloperblog.app.ws.mobileappws.web.utils.security;
 
 import com.appsdeveloperblog.app.ws.mobileappws.dto.UserDto;
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.repository.UserRepository;
+import com.appsdeveloperblog.app.ws.mobileappws.web.utils.JwtUtils;
 import com.appsdeveloperblog.app.ws.mobileappws.web.utils.UrlMappings;
 import com.appsdeveloperblog.app.ws.mobileappws.web.utils.service.UserService;
+import com.appsdeveloperblog.app.ws.mobileappws.web.utils.service.impl.UserServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -25,27 +27,29 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
     private final UserService<UserDto> userDetailsService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final UserRepository userRepository;
+    private final UserServiceImpl userService;
+    private final JwtUtils jwtUtils;
 
     public WebSecurity(UserService<UserDto> userDetailsService,
                        BCryptPasswordEncoder bCryptPasswordEncoder,
-                       UserRepository userRepository) {
+                       UserRepository userRepository, UserServiceImpl userService, JwtUtils jwtUtils) {
         this.userDetailsService = userDetailsService;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.userRepository = userRepository;
+        this.userService = userService;
+        this.jwtUtils = jwtUtils;
     }
 
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.cors()
-                .and()
-                .csrf().disable().authorizeRequests()
-                .antMatchers(HttpMethod.POST, SecurityConstants.SIGN_UP_URL)
-                .permitAll()
+        httpSecurity.cors().and().csrf().disable()
+                .authorizeRequests().antMatchers(HttpMethod.POST, SecurityConstants.SIGN_UP_URL).permitAll()
+                .antMatchers("/api/test/**").permitAll()
                 .antMatchers(HttpMethod.DELETE, SecurityConstants.ADMIN_DELETE_URL).hasRole("ADMIN")
                 .anyRequest().authenticated()
                 .and()
                 .addFilter(getAuthenticationFilter())
-                .addFilter(new AuthorizationFilter(authenticationManager(), userRepository))
+                .addFilter(new AuthorizationFilter(authenticationManager(), userService, jwtUtils))
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
@@ -68,7 +72,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
     }
 
     public AuthenticationFilter getAuthenticationFilter() throws Exception {
-        final AuthenticationFilter filter = new AuthenticationFilter(authenticationManager());
+        final AuthenticationFilter filter = new AuthenticationFilter(authenticationManager(), jwtUtils);
         filter.setFilterProcessesUrl(UrlMappings.LOGIN);
         return filter;
     }

@@ -72,4 +72,5 @@ public class User implements Serializable {
     )
     private Collection<Role> roles;
 
+
 }

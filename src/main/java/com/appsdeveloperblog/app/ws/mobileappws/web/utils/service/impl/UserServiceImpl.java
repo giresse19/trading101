@@ -138,15 +138,14 @@ public class UserServiceImpl implements UserService<UserDto>{
         userRepository.delete(user);
     }
 
-
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email);
+        User user = Optional.ofNullable(userRepository.findByEmail(email))
+                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with email: " + email));
 
-        return new org.springframework.security.core.userdetails.User(
-                user.getEmail(), user.getEncryptedPassword(),
-                new ArrayList<>());
-//        return new UserPrincipal(user);
+//        return new User(user.getEmail(), user.getEncryptedPassword(),
+//                new ArrayList<>());
+return UserPrincipal.build(user);
     }
 
 }
