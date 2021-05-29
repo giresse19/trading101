@@ -29,7 +29,6 @@ public class UserDto implements INameableDto {
     private Boolean emailVerificationStatus = false;
     private Collection<String> roles ;
 
-
     @Override
     public String getName() {
         return null;

@@ -1,14 +1,18 @@
 package com.appsdeveloperblog.app.ws.mobileappws.web.utils.controller;
 
+import com.appsdeveloperblog.app.ws.mobileappws.Exceptions.TokenRefreshException;
 import com.appsdeveloperblog.app.ws.mobileappws.dto.AddressDto;
 import com.appsdeveloperblog.app.ws.mobileappws.dto.UserDto;
+import com.appsdeveloperblog.app.ws.mobileappws.persistence.entity.RefreshToken;
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.model.response.*;
+import com.appsdeveloperblog.app.ws.mobileappws.persistence.model.response.request.TokenRefreshRequest;
 import com.appsdeveloperblog.app.ws.mobileappws.persistence.model.response.request.UserDetailsRequestModel;
 import com.appsdeveloperblog.app.ws.mobileappws.web.utils.JwtUtils;
 import com.appsdeveloperblog.app.ws.mobileappws.web.utils.UrlMappings;
 import com.appsdeveloperblog.app.ws.mobileappws.web.utils.security.SecurityConstants;
 import com.appsdeveloperblog.app.ws.mobileappws.web.utils.service.AddressesService;
 import com.appsdeveloperblog.app.ws.mobileappws.web.utils.service.UserService;
+import com.appsdeveloperblog.app.ws.mobileappws.web.utils.service.impl.RefreshTokenService;
 import io.jsonwebtoken.impl.DefaultClaims;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
@@ -17,6 +21,7 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,16 +39,20 @@ import static com.appsdeveloperblog.app.ws.mobileappws.web.utils.QueryConstants.
 
 @RestController
 @RequestMapping(UrlMappings.USERS)
-public class UserController extends AbstractController<UserDto>{
+public class UserController extends AbstractController<UserDto> {
     private final UserService<UserDto> userService;
+    private final RefreshTokenService refreshTokenService;
     private final AddressesService<AddressDto> addressesService;
-   // private final JwtUtils jwtUtils;
+    private final JwtUtils jwtUtils;
 
     @Autowired
-    public UserController(UserService<UserDto> userService,  AddressesService<AddressDto> addressesService, JwtUtils jwtUtils) {
+    public UserController(UserService<UserDto> userService,
+                          AddressesService<AddressDto> addressesService,
+                          JwtUtils jwtUtils, RefreshTokenService refreshTokenService) {
         this.userService = userService;
-     //   this.jwtUtils = jwtUtils;
+        this.jwtUtils = jwtUtils;
         this.addressesService = addressesService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     // Get - A user
@@ -89,6 +98,25 @@ public class UserController extends AbstractController<UserDto>{
         return CollectionModel.of(addressesList, userLink, selfLink);
     }
 
+    @PostMapping("/{refreshtokenID}")
+    public ResponseEntity<?> refreshtoken(@Valid @PathVariable String refreshtokenID) {
+//        String requestRefreshToken = request.getRefreshToken();
+        Optional<RefreshToken> rToken = refreshTokenService.findByToken(refreshtokenID);
+        HttpHeaders responseHeaders = new HttpHeaders();
+
+        return rToken
+                .map(refreshTokenService::verifyExpiration)
+                .map(RefreshToken::getUser)
+                .map(user -> {
+                    String token = jwtUtils.generateTokenFromUsername(user.getEmail());
+                    responseHeaders.add(SecurityConstants.HEADER_STRING, SecurityConstants.TOKEN_PREFIX + " " + token);
+                    responseHeaders.add("ACCESS_TOKEN_EXPIRES_AT", String.valueOf(jwtUtils.getExpirationTimeFromJwtToken(token)));
+
+                    return new ResponseEntity<>(responseHeaders, HttpStatus.OK);
+                })
+                .orElseThrow(() -> new TokenRefreshException(refreshtokenID, "Refresh token is not in database!"));
+    }
+
     // Get - A user address
 
     @GetMapping(path = "/{id}/addresses/{addressId}",
@@ -101,12 +129,12 @@ public class UserController extends AbstractController<UserDto>{
 
         Link userLink = WebMvcLinkBuilder
                 .linkTo(WebMvcLinkBuilder.methodOn(UserController.class)
-                .getUser(id))
+                        .getUser(id))
                 .withRel("user");
 
         Link selfLink = WebMvcLinkBuilder
                 .linkTo(WebMvcLinkBuilder.methodOn(UserController.class)
-                .getUserAddress(id, addressId))
+                        .getUserAddress(id, addressId))
                 .withSelfRel();
 
         Link userAddressesLink = WebMvcLinkBuilder
@@ -170,7 +198,7 @@ public class UserController extends AbstractController<UserDto>{
 
     // Delete
     @PreAuthorize("hasRole('ROLE_ADMIN') or #id == principal.userId")
-   // @Secured("ROLE_ADMIN")
+    // @Secured("ROLE_ADMIN")
     @DeleteMapping(path = "/{id}", produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public OperationStatusModel deleteUser(@PathVariable String id) {
@@ -186,8 +214,8 @@ public class UserController extends AbstractController<UserDto>{
     // Spring
 
     @Override
-    protected final  UserService getUserService() {
-        return  userService;
+    protected final UserService getUserService() {
+        return userService;
     }
 
 }

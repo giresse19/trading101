@@ -72,5 +72,6 @@ public class User implements Serializable {
     )
     private Collection<Role> roles;
 
-
+    @OneToOne(mappedBy = "user")
+    private RefreshToken refreshToken;
 }

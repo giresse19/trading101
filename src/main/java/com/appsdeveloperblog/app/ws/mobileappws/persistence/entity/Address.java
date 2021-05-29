@@ -43,6 +43,6 @@ public class Address implements Serializable {
     private String postalCode;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "users_id")
+    @JoinColumn(name = "users_id", referencedColumnName = "id")
     private User userDetails;
 }

@@ -16,18 +16,24 @@ public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
     public String generateJwtToken(Authentication auth) {
-//        String userName = ((User) auth.getPrincipal()).getUsername();
-        String userName = ((UserPrincipal) auth.getPrincipal()).getUsername();
-
-        return Jwts.builder()
-                .setSubject(userName)
-                .setExpiration(new Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
-                .signWith(SignatureAlgorithm.HS512, SecurityConstants.getTokenSecret())
-                .compact();
+        return generateTokenFromUsername(((UserPrincipal) auth.getPrincipal()).getUsername());
     }
 
     public String getUserNameFromJwtToken(String token) {
         return Jwts.parser().setSigningKey(SecurityConstants.getTokenSecret()).parseClaimsJws(token).getBody().getSubject();
+    }
+
+    public Date getExpirationTimeFromJwtToken(String token) {
+        return Jwts.parser().setSigningKey(SecurityConstants.getTokenSecret()).parseClaimsJws(token).getBody().getExpiration();
+    }
+
+    public String generateTokenFromUsername(String username) {
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
+                .signWith(SignatureAlgorithm.HS512, SecurityConstants.getTokenSecret())
+                .compact();
     }
 
     public boolean validateJwtToken(String authToken) {

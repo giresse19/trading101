@@ -87,6 +87,11 @@ public class AppExceptionsHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
     }
 
+    @ExceptionHandler()
+    protected ResponseEntity<Object> handleTokenRefreshException(final TokenRefreshException ex, final WebRequest request) {
+        return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.FORBIDDEN, request);
+    }
+
     // 404
     @ExceptionHandler({ MyEntityNotFoundException.class })
     protected ResponseEntity<Object> handleNotFound(final MyEntityNotFoundException ex, final WebRequest request) {
