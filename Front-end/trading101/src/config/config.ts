@@ -1,23 +1,37 @@
-const BASE_URL = `http://localhost:8082`;
-const SIGN_UP = `api/users`
-const LOGIN = `api/users/login`
+const BASE_URL = `http://localhost:8082/api/users`;
+const LOGIN = `login`
+const  AUTHORIZATION_HEADER = "Authorization";
+const  USERID = "UserID";
+const acceptType = "application/json";
 
-const fetchOptions = (body: any) => {
+const fetchOptionsPost = (body: any) => {
     return {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "Accept": "application/json"
+            "Accept": acceptType
         },
         body: body
 
     };
 };
 
+const fetchOptionsGet = (authorization: any) => {
+    return {
+        method: "GET",
+        headers: {
+            "Authorization": authorization,
+            "Accept": acceptType
+        },
+
+    };
+}
 
 export default {
     BASE_URL,
-    fetchOptions,
-    SIGN_UP,
+    fetchOptionsPost,
+    fetchOptionsGet,
+    AUTHORIZATION_HEADER,
+    USERID,
     LOGIN
 };

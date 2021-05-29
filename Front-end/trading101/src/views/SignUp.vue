@@ -126,13 +126,19 @@
 <script lang="ts">
 import {Component, Vue} from "vue-property-decorator";
 import config from "@/config/config";
-import {setFormSubmissionStatusToTrue, setFormSubmissionStatusToFalse} from '@/store/actions';
+import {creatAccount, setFormSubmissionStatusToTrue} from '@/store/actions';
 import TheNotification from "@/views/TheNotification.vue";
+import {displayMessageError} from "@/utils/requestHelpers";
+import {Getter} from "vuex-class";
+import SignUpModel from "@/model/SignUpModel";
 
 @Component({
   components: {TheNotification},
 })
 export default class SignUp extends Vue {
+  @Getter('GET_IS_FORM_SUBMITTED')
+  isFormSubmitted!: boolean;
+
   firstname = '';
   lastname = '';
   email = '';
@@ -163,13 +169,12 @@ export default class SignUp extends Vue {
   };
 
   async postFormData() {
-    const formData = {
+    const formData:SignUpModel = {
       'firstName': this.firstname,
       'lastName': this.firstname,
       'email': this.email,
       'password': this.password,
-      'addresses': [
-        {
+      'addresses': [{
           'city': this.city,
           'country': this.country,
           'streetName': this.streetName,
@@ -178,15 +183,10 @@ export default class SignUp extends Vue {
       ]
     };
 
-    const response = await fetch(`${config.BASE_URL}/${config.SIGN_UP}`, config.fetchOptions(JSON.stringify(formData)));
-    if (response.ok) {
-      await this.$store.dispatch(setFormSubmissionStatusToTrue);
-      await this.$router.push('login');
-    } else {
-      console.log("response",  response)
-      alert("Account creation failed, please check logging credentials!")
-      await this.$store.dispatch(setFormSubmissionStatusToFalse);
+    await this.$store.dispatch('creatAccount',  config.fetchOptionsPost(JSON.stringify(formData)));
 
+    if(this.isFormSubmitted){
+      await this.$router.push('login');
     }
   };
 

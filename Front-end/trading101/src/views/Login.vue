@@ -1,6 +1,6 @@
 <template>
   <v-container class="grey lighten-5">
- <span v-if="$store.state.isFormSubmitted">
+ <span v-if="isFormSubmitted">
 <TheNotification text='Account created, redirected to Login Page!'>
 </TheNotification>
  </span>
@@ -20,7 +20,7 @@
             >
               <v-card-title>Sign In</v-card-title>
               <v-card-text>
-                <v-form v-model="isValid">
+                <v-form v-model="isValid" @submit.prevent="postFormData">
                   <v-text-field
                       label="Email"
                       v-model="email"
@@ -49,7 +49,8 @@
               <v-card-actions>
                 <v-btn
                     class="btn-style"
-                    :disabled="!isValid">
+                    :disabled="!isValid"
+                    @click="postFormData">
                   Login
                 </v-btn>
               </v-card-actions>
@@ -87,7 +88,11 @@
 
 <script lang="ts">
 import {Component, Vue} from "vue-property-decorator";
+import {Getter} from 'vuex-class';
 import TheNotification from "@/views/TheNotification.vue";
+import config from "@/config/config";
+import LoginModel from "@/model/LoginModel";
+import User from "@/model/User";
 
 @Component({
   components: {TheNotification},
@@ -97,6 +102,26 @@ export default class Login extends Vue {
   email = '';
   password = '';
   isValid = true;
+
+  @Getter('GET_IS_FORM_SUBMITTED')
+  isFormSubmitted!: boolean;
+
+  @Getter('GET_USER')
+  user!: User;
+
+
+  async postFormData() {
+    const formData:LoginModel = {
+      'email': this.email,
+      'password': this.password,
+    };
+
+    await this.$store.dispatch('login',  config.fetchOptionsPost(JSON.stringify(formData)));
+
+    if(this.isFormSubmitted){
+      await this.$router.push('user');
+    }
+  }
 
 }
 </script>
